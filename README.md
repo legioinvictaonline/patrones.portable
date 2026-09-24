@@ -1,31 +1,25 @@
-# Lenguajes de patrones — versión portable
+# Lenguajes de patrones
 
-Copia autocontenida del tablero de lenguajes de patrones. Funciona sin servidor y sin conexión.
+Material de trabajo interno. Se abre con contraseña.
 
 ## Cómo se usa
 
-1. Descargar el repositorio (botón **Code › Download ZIP**, o clonarlo).
-2. Descomprimir.
-3. Abrir **`Lenguajes de patrones.html`** con doble clic.
+Abrir el enlace, escribir la contraseña y listo. No hace falta cuenta, instalar nada ni descargar nada.
 
-No hace falta instalar ni encender nada.
+## Cómo está protegido
 
-> **Importante:** la carpeta `img/` debe quedar junto al HTML. Si se separan, el tablero funciona pero las láminas no se ven.
+El contenido va **cifrado con AES-GCM**. La clave se deriva de la contraseña con PBKDF2-SHA256 y 250,000 iteraciones, y el descifrado ocurre en el navegador de quien abre.
+
+No es una puerta cosmética: sin la contraseña, lo que se descarga es ruido. El texto no está en el HTML.
+
+Las láminas van como archivos y no están cifradas — protegerlas costaría descifrar 49 MB al abrir. Quedan resguardadas por no estar enlazadas y por `robots.txt`.
 
 ## Qué contiene
 
-Cinco lenguajes de patrones, navegables por escala, con búsqueda y enlaces entre patrones mayores y menores.
+Cinco lenguajes de patrones, navegables por escala, con búsqueda y enlaces entre patrones mayores y menores. La atribución de cada fuente viene dentro de cada patrón.
 
-## Cómo se generó
+## Cómo se regenera
 
-El tablero original vive en un servidor local y lee las notas del vault en vivo: lo que se edita en Obsidian se ve al recargar. Esta versión lleva ese contenido **congelado** dentro del HTML.
+Ver la nota `publicar con contraseña en GitHub Pages` en el vault.
 
-**No se actualiza sola.** Es una foto del momento en que se generó. Para reflejar cambios posteriores hay que regenerar el paquete y volver a subirlo.
-
-## Uso
-
-Material de trabajo interno. No es para distribución pública.
-
----
-
-Generado el 24 de septiembre de 2026.
+El contenido va **congelado**: no se actualiza cuando cambian las notas. Para reflejar cambios hay que regenerar y volver a subir.

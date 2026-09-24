@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<title>Lenguajes de patrones</title>
+<!--
+  Lenguajes de patrones — versión publicada con contraseña.
+  Quién: Lumi (a petición del Demiurgo) | Cuándo: 202609241400
+  Por qué: los colaboradores son arquitectos sin cuenta de GitHub. Necesitaban un enlace que
+     abra y ya, pero el contenido no es de dominio público.
+  Cómo protege: el contenido va cifrado con AES-GCM; la clave se deriva de la contraseña con
+     PBKDF2-SHA256 y 250,000 iteraciones. Sin la contraseña, lo que se descarga es ruido.
+     No es un gate cosmético: el texto no está en el HTML.
+  Cómo se regenera: ver la nota [[publicar con contraseña en GitHub Pages]].
+-->
+<style>
+/*
+  patrones/patrones.css
+  Qué es: estilo del wiki de lenguajes de patrones. Misma piel que la familia de tableros
+          (papel crema, óxido, tipografía del sistema) pero en columna de lectura: aquí no se
+          barre un montón, se LEE media cuartilla por patrón.
+  Quién: Lumi (a petición del Demiurgo) | Cuándo: 202608311040
+  Por qué: el Demiurgo pidió "una versión wiki navegable, legible, con un estilo agradable para
+          irlo leyendo y revisando, del estilo de los tableros". Las fichas no sirven para leer:
+          un patrón metido en tarjeta de 520px es ilegible. Se hereda la piel, no el formato.
+  Decisiones: ancho de lectura ~62ch (lo que el ojo alcanza sin perder el renglón); el problema
+          y la solución destacados como en A Pattern Language; los patrones mayores arriba y
+          los menores abajo, siempre visibles, que es la navegación real de un lenguaje.
+  Cambios:
+   - 202608311040 Lumi — versión inicial.
+*/
+:root{
+  --bg:#f4f1ea; --dot:#e2ddd0; --ink:#2b2b2b; --muted:#6b6b6b;
+  --card:#fffdf8; --card-border:#ded7c7;
+  --oxido:#a34a2a; --ambar:#b8862b; --lang:#a34a2a;
+  --shadow:0 2px 6px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:16px;line-height:1.6}
+
+/* ── barra superior ─────────────────────────────────────────── */
+#top{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:10px 20px;background:rgba(244,241,234,.96);border-bottom:1px solid var(--card-border);
+  backdrop-filter:blur(6px)}
+#top h1{margin:0;font-size:17px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
+#top .chip{font-size:12.5px;text-decoration:none;color:var(--oxido);border:1px solid #e0cfc2;
+  background:#fbf3ee;border-radius:999px;padding:3px 11px;font-weight:600;cursor:pointer}
+#top .chip:hover{background:#f6e7de}
+#top .chip.on{background:var(--lang);border-color:var(--lang);color:#fff}
+#top .chip .n{opacity:.6;margin-left:5px;font-weight:700}
+#buscar{flex:1;min-width:150px;max-width:340px;padding:5px 11px;border-radius:999px;
+  border:1px solid var(--card-border);background:var(--card);font-size:13.5px;color:var(--ink)}
+#estado{margin-left:auto;font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+/* ── dos columnas ───────────────────────────────────────────── */
+#wrap{display:flex;align-items:flex-start;gap:28px;padding:22px 20px 80px;max-width:1320px}
+#indice{position:sticky;top:56px;width:290px;flex:none;max-height:calc(100vh - 76px);
+  overflow-y:auto;padding-right:6px;font-size:13px}
+#indice .sec{margin:16px 0 6px;font-size:11px;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;color:var(--lang);border-bottom:1px solid var(--card-border);
+  padding-bottom:4px}
+#indice .sec .nota{display:block;font-weight:500;letter-spacing:0;text-transform:none;
+  color:var(--muted);font-size:11.5px;margin-top:3px;font-style:italic}
+#indice a{display:flex;gap:7px;padding:3px 6px;border-radius:6px;text-decoration:none;
+  color:var(--ink);line-height:1.35}
+#indice a:hover{background:#ece7db}
+#indice a.on{background:var(--card);box-shadow:var(--shadow);font-weight:600}
+#indice a .n{color:var(--muted);font-variant-numeric:tabular-nums;flex:none;min-width:34px}
+#indice a.borrador .t{color:var(--muted);font-style:italic}
+#indice a .fav{flex:none;color:var(--ambar)}
+/* [202609231655 Lumi] Patron nombrado en el resumen y todavia sin nota. Se ve, en su lugar de
+   escala, pero no se abre: asi el lenguaje se lee completo y se sabe exactamente que falta. */
+#indice a.falta{cursor:default;opacity:.62}
+#indice a.falta:hover{background:transparent}
+#indice a.falta .t{color:var(--muted)}
+#indice a.falta .en{color:#a09484;border-color:#ded7c7}
+
+#lectura{flex:1;min-width:0;max-width:760px}
+
+/* ── un patrón ──────────────────────────────────────────────── */
+.patron{background:var(--card);border:1px solid var(--card-border);border-radius:12px;
+  box-shadow:var(--shadow);padding:30px 34px;margin-bottom:26px}
+.patron .num{font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--lang)}
+.patron h2{margin:2px 0 4px;font-size:25px;line-height:1.2;letter-spacing:.2px}
+.patron .alias{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+.patron .contexto{color:#54514c;font-size:15px;margin:14px 0}
+.patron .sep{text-align:center;color:var(--card-border);letter-spacing:8px;margin:22px 0;
+  font-size:15px;user-select:none}
+.patron .problema{font-size:18.5px;line-height:1.5;font-weight:700;margin:0 0 18px}
+.patron p{margin:0 0 14px}
+.patron ol,.patron ul{margin:0 0 14px;padding-left:22px}
+.patron li{margin:4px 0}
+.patron blockquote{margin:0 0 14px;padding:2px 0 2px 14px;border-left:3px solid var(--card-border);
+  color:#54514c;font-size:15px}
+.patron .solucion{border-left:4px solid var(--lang);background:#faf5ee;border-radius:0 8px 8px 0;
+  padding:14px 18px;font-size:17px;font-weight:600;line-height:1.5;margin:4px 0 6px}
+.patron .solucion .pt{display:block;font-size:11.5px;font-weight:800;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--lang);margin-bottom:6px;opacity:.9}
+.patron .cierre{color:#54514c;font-size:15px;margin:16px 0 0}
+.patron .fuente{margin-top:20px;padding-top:12px;border-top:1px dashed var(--card-border);
+  font-size:12.5px;color:var(--muted);white-space:pre-line}
+
+/* ── enlaces entre patrones ─────────────────────────────────── */
+.liga{display:inline-block;font-size:12.5px;text-decoration:none;font-weight:600;
+  border-radius:999px;padding:2px 10px;margin:2px 4px 2px 0;
+  border:1px solid #e0cfc2;background:#fbf3ee;color:var(--oxido)}
+.liga:hover{background:#f6e7de}
+.liga.l-alexander{border-color:#c9dcea;background:#eff5fa;color:#2f6f9e}
+.liga.l-demiurgo{border-color:#ddd0ee;background:#f5f0fb;color:#7a5c9e}
+.liga.pendiente{border-style:dashed;background:transparent;color:#a08f80;cursor:not-allowed}
+.tira{margin:10px 0}
+.tira .et{display:block;font-size:10.5px;font-weight:800;letter-spacing:1.1px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+
+/* ── varios ─────────────────────────────────────────────────── */
+.nav{display:flex;gap:10px;justify-content:space-between;margin:0 0 26px}
+.nav a{font-size:13px;text-decoration:none;color:var(--oxido);background:var(--card);
+  border:1px solid var(--card-border);border-radius:8px;padding:7px 13px;max-width:46%;
+  box-shadow:var(--shadow)}
+.nav a:hover{background:#fbf3ee}
+.nav a .et{display:block;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.aviso{background:#fdf6e6;border:1px solid #e8d9b0;border-radius:10px;padding:12px 16px;
+  font-size:13.5px;color:#6b5a2b;margin-bottom:20px}
+.fav-btn{float:right;border:1px solid var(--card-border);background:var(--card);cursor:pointer;
+  border-radius:999px;font-size:12px;padding:4px 12px;color:var(--muted);font-weight:600}
+.fav-btn.on{border-color:var(--ambar);color:var(--ambar);background:#fdf6e6}
+.vacio{color:var(--muted);font-size:14px;padding:30px 0}
+@media (max-width:900px){#indice{display:none}#wrap{padding:16px 14px 60px}.patron{padding:22px 20px}}
+
+/* [202609010230 · Lumi] láminas del libro (las 822 páginas escaneadas), marca de idioma y
+   el conmutador español/inglés de un mismo patrón. */
+.patron .lamina{display:block;max-width:100%;margin:14px auto;border-radius:6px;
+  border:1px solid var(--card-border);background:#fff}
+.idiomas{display:flex;gap:8px;align-items:center;margin:6px 0 12px;font-size:11.5px}
+.idiomas .on{font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--lang)}
+.idiomas .otro{cursor:pointer;border:1px solid var(--card-border);border-radius:999px;
+  padding:2px 10px;color:var(--muted);background:var(--card)}
+.idiomas .otro:hover{background:#f6e7de;color:var(--oxido)}
+.idiomas .falta{color:#a08f80;font-style:italic}
+#indice a .en{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.6px;color:#8aa4bb;
+  border:1px solid #cfe0ec;border-radius:4px;padding:0 3px;align-self:center}
+
+#puerta { position:fixed; inset:0; background:#faf8f5; display:flex; align-items:center;
+  justify-content:center; z-index:9999; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+#puerta .caja { text-align:center; max-width:340px; padding:0 24px; }
+#puerta h2 { font-size:1.15rem; font-weight:600; margin:0 0 6px; color:#2b2b2b; }
+#puerta p { font-size:.88rem; color:#777; margin:0 0 22px; line-height:1.5; }
+#puerta input { width:100%; padding:11px 14px; font-size:1rem; border:1px solid #ddd;
+  border-radius:9px; outline:none; text-align:center; }
+#puerta input:focus { border-color:#8a7a5c; }
+#puerta button { width:100%; margin-top:10px; padding:11px; font-size:.95rem; font-weight:600;
+  border:0; border-radius:9px; background:#8a7a5c; color:#fff; cursor:pointer; }
+#puerta .err { color:#b4413c; font-size:.85rem; margin-top:12px; min-height:1.2em; }
+</style>
+</head>
+<body>
+<div id="puerta">
+  <div class="caja">
+    <h2>Lenguajes de patrones</h2>
+    <p>Material de trabajo. Escribe la contraseña para abrirlo.</p>
+    <input id="clave" type="password" autocomplete="off" autofocus placeholder="contraseña">
+    <button id="entrar">Entrar</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="top">
+  <h1>Lenguajes de patrones</h1>
+  <span id="lenguajes"></span>
+  <input id="buscar" placeholder="buscar en titulo, problema o solucion...">
+  <span id="estado">cargando...</span>
+</div>
+<div id="wrap">
+  <nav id="indice"></nav>
+  <main id="lectura"></main>
+</div>
+
+<script>
+// Descifrado en el navegador con Web Crypto. Nada sale de la maquina de quien abre.
+async function abrir(pass) {
+  const p = await (await fetch("contenido.cifrado.json")).json();
+  const dec = new TextDecoder(), enc = new TextEncoder();
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const base = await crypto.subtle.importKey("raw", enc.encode(pass), "PBKDF2", false, ["deriveKey"]);
+  const k = await crypto.subtle.deriveKey(
+    { name:"PBKDF2", salt:b64(p.kdf.sal), iterations:p.kdf.iteraciones, hash:"SHA-256" },
+    base, { name:"AES-GCM", length:256 }, false, ["decrypt"]);
+  const claro = await crypto.subtle.decrypt({ name:"AES-GCM", iv:b64(p.cifrado.iv) }, k, b64(p.datos));
+  return JSON.parse(dec.decode(claro));
+}
+
+document.getElementById("entrar").onclick = intentar;
+document.getElementById("clave").onkeydown = e => { if (e.key === "Enter") intentar(); };
+
+async function intentar() {
+  const err = document.getElementById("err");
+  err.textContent = "descifrando...";
+  try {
+    window.PATRONES_DATOS = await abrir(document.getElementById("clave").value);
+    // El tablero pide su contenido por fetch; aqui se le entrega el ya descifrado
+    // sin tocar su codigo, para que esta version y la de servidor no divirjan.
+    window.fetch = () => Promise.resolve({ ok:true, json: () => Promise.resolve(window.PATRONES_DATOS) });
+    document.getElementById("puerta").remove();
+    const s = document.createElement("script");
+    s.textContent = document.getElementById("motor").textContent;
+    document.body.appendChild(s);
+  } catch (e) {
+    err.textContent = "Contrasena incorrecta";
+    document.getElementById("clave").value = "";
+    document.getElementById("clave").focus();
+  }
+}
+</script>
+
+<script type="text/plain" id="motor">
+/*
+  patrones/patrones.js
+  Qué es: el lector del wiki de lenguajes de patrones. Pide /api/patrones (que lee las notas del
+          vault EN VIVO), arma el índice por escala y pinta un patrón a la vez en columna de
+          lectura, con sus patrones mayores arriba y los menores abajo.
+  Quién: Lumi (a petición del Demiurgo) | Cuándo: 202608311045
+  Por qué: leer un lenguaje de patrones en Obsidian obliga a saltar de nota en nota y se pierde
+          el lugar. Aquí el salto es el punto: los enlaces de arriba y abajo SON la navegación
+          que Alexander diseñó, y el índice por escala mantiene el sitio.
+  Cómo funciona:
+   - Fuente: GET /api/patrones?sig=… El servidor responde {sinCambios:true} si nada se movió;
+     si cambió, manda todo otra vez. Por eso editar la nota en Obsidian actualiza esto solo.
+   - Ruta: el hash del navegador (#plazola/(P18) LAS SEIS ZONAS) — así se puede enlazar un
+     patrón concreto desde una nota del vault y cae en su página.
+   - Selección: las estrellas se guardan en localStorage. Es el método de Alexander: para una obra
+     concreta no se usan los 70, se escoge el subconjunto que es el lenguaje DE ESE proyecto.
+  Ojo: esto no escribe nada en el vault. Solo lee.
+  Cambios:
+   - 202608311045 Lumi — versión inicial.
+ - 202609231633 Lumi — el lector se volvió multi-colección. Lee window.WIKI {api, lang, ls}; sin
+   config sigue siendo /patrones/ exactamente como estaba. Nació para /vida/ (patrones del
+   sufrimiento y de la vida), que el Demiurgo pidió con estructura independiente: mismo lector,
+   catálogo e índice aparte. Dos casas, un motor.
+ - 202609010230 Lumi — el Demiurgo encontró los 253 de Alexander completos en inglés (opus/tools/
+   patterns) con las imágenes del libro. Ahora: imágenes, alternancia español/inglés en el mismo
+   patrón (mismo número = mismo patrón), índice agrupado por escala cuando no hay nota de resumen,
+   y marca de lo que falta traducir.
+*/
+(function () {
+  const POLL = 3000;
+  // [202609231633 Lumi] El lector sirve varias COLECCIONES. Cada una declara su API, su lenguaje de
+  // arranque y su llave de selección en window.WIKI (ver vida/index.html). Sin config: /patrones/.
+  const CFG = window.WIKI || {};
+  const API = CFG.api || "/api/patrones";
+  const LS = CFG.ls || "patrones.seleccion";
+  let D = null;            // datos del API
+  let porTitulo = {};      // "(P18) LAS SEIS ZONAS" → patrón
+  let lang = CFG.lang || "plazola";
+  let modo = "patron";     // patron | libro | seleccion
+  let actual = null;
+  let sel = new Set(JSON.parse(localStorage.getItem(LS) || "[]"));
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ── markdown de andar por casa: lo que de verdad usan estas notas ──────────
+  function inline(s) {
+    let t = esc(s);
+    t = t.replace(/!\[img\]\(([^)]+)\)/g, (_, u) => `<img class="lamina" src="${u}" loading="lazy" alt="">`);
+    t = t.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, dest, alias) => liga(dest.trim(), alias));
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+    t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+    return t;
+  }
+  function liga(dest, alias) {
+    const p = porTitulo[dest];
+    const txt = esc(alias || dest);
+    if (!p) return `<span class="liga pendiente" title="todavía no existe esa nota">${txt}</span>`;
+    return `<a class="liga l-${p.lenguaje}" href="#${encodeURIComponent(p.lenguaje)}/${encodeURIComponent(p.archivo)}">${txt}</a>`;
+  }
+  function bloques(txt) {
+    if (!txt) return "";
+    let out = "", lista = null;
+    for (const par of String(txt).split(/\n{2,}/)) {
+      const lineas = par.split("\n").filter(l => l.trim());
+      const numerada = lineas.length && lineas.every(l => /^\s*\d+\.\s/.test(l));
+      const viñeta = lineas.length && lineas.every(l => /^\s*[-*]\s/.test(l));
+      const cita = lineas.length && lineas.every(l => /^\s*>/.test(l));
+      if (numerada || viñeta) {
+        const tag = numerada ? "ol" : "ul";
+        out += `<${tag}>` + lineas.map(l =>
+          `<li>${inline(l.replace(/^\s*(?:\d+\.|[-*])\s*/, ""))}</li>`).join("") + `</${tag}>`;
+      } else if (cita) {
+        out += `<blockquote>${inline(lineas.map(l => l.replace(/^\s*>\s?/, "")).join("\n"))}</blockquote>`;
+      } else {
+        out += `<p>${inline(par.replace(/\s*\n\s*/g, " "))}</p>`;
+      }
+    }
+    return out;
+  }
+
+  // ── índice: por secciones si el lenguaje trae resumen; si no, por número ───
+  function ordenados(clave) {
+    const L = (D.lenguajes || []).find(x => x.clave === clave) || {};
+    const todos = D.patrones.filter(p => p.lenguaje === clave);
+    if (!L.resumen) {
+      // sin nota de resumen, el orden natural es la escala del libro (pueblos → edificios → obra)
+      const escalas = [];
+      for (const p of todos) {
+        const e = p.escala || "";
+        let s = escalas.find(x => x.titulo === e);
+        if (!s) escalas.push(s = { titulo: e || null, nota: "", patrones: [] });
+        s.patrones.push(p);
+      }
+      return escalas;
+    }
+    const usados = new Set();
+    const secs = L.resumen.secciones.map(s => ({
+      titulo: s.titulo, nota: s.nota,
+      patrones: s.patrones.map(t => { usados.add(t); return porTitulo[t]; }).filter(Boolean),
+      // nombrados en el resumen pero todavía sin nota: se listan en gris, en su lugar de escala
+      pendientes: s.pendientes || [],
+    }));
+    const sueltos = todos.filter(p => !usados.has(p.archivo));
+    if (sueltos.length) secs.push({ titulo: "Fuera del índice", nota: "están en la carpeta pero el resumen no los lista", patrones: sueltos });
+    return secs;
+  }
+
+  function pintarIndice() {
+    const cont = $("#indice");
+    if (modo === "seleccion") {
+      const mios = D.patrones.filter(p => sel.has(p.id));
+      cont.innerHTML = `<div class="sec">Mi lenguaje<span class="nota">${mios.length} patrones escogidos</span></div>` +
+        mios.map(fila).join("") || "";
+      return;
+    }
+    cont.innerHTML = ordenados(lang).map(s =>
+      (s.titulo ? `<div class="sec">${esc(s.titulo)}${s.nota ? `<span class="nota">${esc(s.nota)}</span>` : ""}</div>` : "") +
+      s.patrones.map(fila).join("") +
+      (s.pendientes || []).map(filaPendiente).join("")).join("");
+  }
+  // un patrón nombrado en el resumen que todavía no tiene nota: se ve, no se abre
+  function filaPendiente(x) {
+    return `<a class="pat falta" title="nombrado en el índice, todavía sin escribir">` +
+      `<span class="n">${esc(x.num)}</span><span class="t">${esc(x.titulo)}</span>` +
+      `<span class="en">falta</span></a>`;
+  }
+  function fila(p) {
+    const on = actual && actual.id === p.id ? " on" : "";
+    const borr = p.formato === "libre" ? " borrador" : "";
+    return `<a class="pat${on}${borr}" href="#${encodeURIComponent(p.lenguaje)}/${encodeURIComponent(p.archivo)}">` +
+      `<span class="n">${esc(p.num || "—")}</span><span class="t">${esc(p.titulo)}</span>` +
+      (p.idioma !== "es" ? `<span class="en">en</span>` : "") +
+      (sel.has(p.id) ? `<span class="fav">★</span>` : "") + `</a>`;
+  }
+
+  // ── una página de patrón ───────────────────────────────────────────────────
+  function pintarPatron(p, conNav) {
+    const lista = planos();
+    const i = lista.findIndex(x => x.id === p.id);
+    const prev = i > 0 ? lista[i - 1] : null, sig = i >= 0 && i < lista.length - 1 ? lista[i + 1] : null;
+    let h = "";
+    if (conNav) {
+      h += `<div class="nav">` +
+        (prev ? `<a href="#${encodeURIComponent(prev.lenguaje)}/${encodeURIComponent(prev.archivo)}"><span class="et">anterior</span>${esc(prev.num)} · ${esc(prev.titulo)}</a>` : `<span></span>`) +
+        (sig ? `<a style="text-align:right" href="#${encodeURIComponent(sig.lenguaje)}/${encodeURIComponent(sig.archivo)}"><span class="et">siguiente</span>${esc(sig.num)} · ${esc(sig.titulo)}</a>` : `<span></span>`) +
+        `</div>`;
+    }
+    h += `<article class="patron" id="p-${esc(p.id)}">`;
+    h += `<button class="fav-btn${sel.has(p.id) ? " on" : ""}" data-id="${esc(p.id)}">${sel.has(p.id) ? "★ en mi lenguaje" : "☆ añadir al mío"}</button>`;
+    h += `<div class="num">${esc(p.num || "sin número")}${p.escala ? " · " + esc(p.escala) : ""}</div><h2>${esc(p.titulo)}</h2>`;
+    // mismo número = mismo patrón: el español manda cuando existe, el inglés queda a un clic
+    if (p.alt) {
+      h += `<div class="idiomas"><span class="on">${p.idioma === "es" ? "español" : "inglés"}</span>` +
+           `<span class="otro" data-alt="${esc(p.id)}">ver en ${p.alt.idioma === "es" ? "español" : "inglés"}</span></div>`;
+    } else if (p.idioma !== "es") {
+      h += `<div class="idiomas"><span class="on">inglés</span><span class="falta">sin traducir</span></div>`;
+    }
+    if (p.alias && p.alias.length) h += `<div class="alias">${esc(p.alias.join(" · "))}</div>`;
+    if (p.formato === "libre") {
+      h += `<div class="aviso">Todavía no tiene forma de patrón: le falta el problema y la solución en imperativo. Se muestra tal como está en la nota.</div>`;
+    }
+    // Alexander pone los enlaces dentro de la prosa, no en una tira aparte. La tira solo aparece
+    // para lo que la prosa NO nombra, así no se ve dos veces lo mismo.
+    const mayoresSueltos = (p.mayores || []).filter(t => !(p.contexto || "").includes(t));
+    if (mayoresSueltos.length) {
+      h += `<div class="tira"><span class="et">ayuda a completar</span>${mayoresSueltos.map(t => liga(t)).join("")}</div>`;
+    }
+    if (p.contexto) h += `<div class="contexto">${bloques(p.contexto)}</div>`;
+    if (p.problema) {
+      h += `<div class="sep">⁂</div><div class="problema">${inline(p.problema)}</div>`;
+    }
+    // el "Por tanto:" suelto del cuerpo sobra: el bloque de la solución ya lo rotula
+    const cuerpo = (p.cuerpo || []).filter(x => !/^(por tanto|therefore)\s*:?\s*$/i.test(x.trim()));
+    h += bloques(cuerpo.join("\n\n"));
+    if (p.solucion) h += `<div class="solucion"><span class="pt">Por tanto</span>${inline(p.solucion)}</div>`;
+    if (p.cierre || (p.menores || []).length) h += `<div class="sep">⁂</div>`;
+    if (p.cierre) h += `<div class="cierre">${bloques(p.cierre)}</div>`;
+    const menoresSueltos = (p.menores || []).filter(t => !(p.cierre || "").includes(t));
+    if (menoresSueltos.length) {
+      h += `<div class="tira"><span class="et">se completa con</span>${menoresSueltos.map(t => liga(t)).join("")}</div>`;
+    }
+    if (p.fuente) h += `<div class="fuente">${inline(p.fuente)}</div>`;
+    h += `</article>`;
+    return h;
+  }
+  function planos() {
+    if (modo === "seleccion") return D.patrones.filter(p => sel.has(p.id));
+    return ordenados(lang).flatMap(s => s.patrones);
+  }
+
+  // ── pintado general ───────────────────────────────────────────────────────
+  function pintar() {
+    if (!D) return;
+    const L = (D.lenguajes || []).find(x => x.clave === lang);
+    document.documentElement.style.setProperty("--lang", (L && L.color) || "#a34a2a");
+    $("#lenguajes").innerHTML = (D.lenguajes || []).map(x =>
+      `<span class="chip${x.clave === lang && modo !== "seleccion" ? " on" : ""}" data-lang="${x.clave}" title="${x.traducidos != null ? x.traducidos + " traducidos al español de " + x.total : ""}">${esc(x.nombre)}<span class="n">${x.total}</span></span>`
+    ).join("") +
+      `<span class="chip${modo === "libro" ? " on" : ""}" data-modo="libro">modo libro</span>` +
+      `<span class="chip${modo === "seleccion" ? " on" : ""}" data-modo="seleccion">★ mi lenguaje<span class="n">${sel.size}</span></span>`;
+    pintarIndice();
+
+    const q = ($("#buscar").value || "").trim().toLowerCase();
+    const caja = $("#lectura");
+    if (q) {
+      const hits = D.patrones.filter(p =>
+        (p.titulo + " " + p.num + " " + (p.problema || "") + " " + (p.solucion || "")).toLowerCase().includes(q));
+      caja.innerHTML = `<div class="aviso">${hits.length} patrón(es) con «${esc(q)}»</div>` +
+        (hits.map(p => pintarPatron(p, false)).join("") || `<div class="vacio">Nada.</div>`);
+      return;
+    }
+    if (modo === "libro" || modo === "seleccion") {
+      const lista = planos();
+      caja.innerHTML = lista.length
+        ? lista.map(p => pintarPatron(p, false)).join("")
+        : `<div class="vacio">Sin patrones escogidos todavía. Ábrelos y dale a ☆ añadir al mío.</div>`;
+      return;
+    }
+    caja.innerHTML = actual ? pintarPatron(actual, true) : portada();
+    window.scrollTo({ top: 0 });
+  }
+  function portada() {
+    const L = (D.lenguajes || []).find(x => x.clave === lang) || {};
+    const r = L.resumen;
+    let h = `<article class="patron"><div class="num">${esc(L.nombre || lang)}</div>` +
+      `<h2>${esc(L.total)} patrones</h2>`;
+    if (r) {
+      h += `<div class="contexto">Índice por escala, del sitio al detalle. Cada patrón nombra arriba los mayores que ayuda a completar y abajo los menores que lo completan a él; ninguno se sostiene solo.</div>`;
+      h += r.secciones.map(s => {
+        const falta = (s.pendientes || []).length;
+        const cuenta = falta ? `${s.patrones.length}/${s.patrones.length + falta}` : String(s.patrones.length);
+        return `<p><strong>${esc(s.titulo)}</strong> — ${esc(s.nota || "")} <span style="color:#6b6b6b">(${cuenta})</span></p>`;
+      }).join("");
+      if (r.calla && r.calla.length) {
+        h += `<div class="sep">⁂</div><div class="problema">Dónde este lenguaje calla</div>` + bloques(r.calla.map(x => "- " + x).join("\n"));
+      }
+    } else {
+      h += `<div class="contexto">Este lenguaje no tiene nota de resumen, así que el índice va por número.</div>`;
+    }
+    const sinTraducir = D.patrones.filter(p => p.lenguaje === lang && p.idioma !== "es").length;
+    if (sinTraducir) h += `<div class="aviso">${sinTraducir} de ${L.total} solo están en inglés — se leen igual, marcados <b>en</b> en el índice. Cuando se traduzca uno, basta con dejar la nota en la carpeta en español con su número: el wiki los empareja solos.</div>`;
+    const borradores = D.patrones.filter(p => p.lenguaje === lang && p.formato === "libre").length;
+    if (borradores) h += `<div class="aviso">${borradores} de ${L.total} todavía no tienen forma de patrón (les falta problema y solución). Aparecen en cursiva en el índice.</div>`;
+    return h + `</article>`;
+  }
+
+  // ── ruta, eventos y refresco ──────────────────────────────────────────────
+  function leerHash() {
+    const h = decodeURIComponent(location.hash.replace(/^#/, ""));
+    if (!h) { actual = null; return; }
+    const i = h.indexOf("/");
+    const l = i < 0 ? lang : h.slice(0, i), a = i < 0 ? h : h.slice(i + 1);
+    const p = D.patrones.find(x => x.lenguaje === l && x.archivo === a) || porTitulo[a];
+    if (p) { actual = p; lang = p.lenguaje; if (modo !== "patron") modo = "patron"; }
+  }
+  function indexar() {
+    porTitulo = {};
+    for (const p of D.patrones) {
+      porTitulo[p.archivo] = p;
+      for (const a of p.alias || []) if (!porTitulo[a]) porTitulo[a] = p;
+    }
+  }
+  async function refrescar(primera) {
+    try {
+      const r = await fetch(API + (D && !primera ? "?sig=" + encodeURIComponent(D.sig) : ""));
+      const j = await r.json();
+      $("#estado").textContent = "en vivo ● " + new Date().toLocaleTimeString("es-MX", { hour12: false });
+      if (j.sinCambios) return;
+      D = j; indexar();
+      if (actual) actual = D.patrones.find(p => p.id === actual.id) || null;
+      if (primera) leerHash();
+      pintar();
+    } catch (e) {
+      $("#estado").textContent = "sin conexión con el servidor";
+    }
+  }
+
+  document.addEventListener("click", ev => {
+    const chip = ev.target.closest("#lenguajes .chip");
+    if (chip) {
+      if (chip.dataset.modo) modo = modo === chip.dataset.modo ? "patron" : chip.dataset.modo;
+      else { lang = chip.dataset.lang; modo = "patron"; actual = null; location.hash = ""; }
+      return pintar();
+    }
+    const alt = ev.target.closest(".idiomas .otro");
+    if (alt) {
+      const p = D.patrones.find(x => x.id === alt.dataset.alt);
+      if (p && p.alt) {
+        const a = p.alt;
+        p.alt = { idioma: p.idioma, lenguaje: p.lenguaje, archivo: p.archivo, titulo: p.titulo,
+          contexto: p.contexto, problema: p.problema, cuerpo: p.cuerpo, solucion: p.solucion,
+          cierre: p.cierre, fuente: p.fuente, mayores: p.mayores, menores: p.menores, formato: p.formato };
+        Object.assign(p, { idioma: a.idioma, titulo: a.titulo, contexto: a.contexto,
+          problema: a.problema, cuerpo: a.cuerpo, solucion: a.solucion, cierre: a.cierre,
+          fuente: a.fuente, mayores: a.mayores, menores: a.menores, formato: a.formato });
+        pintar();
+      }
+      return;
+    }
+    const fav = ev.target.closest(".fav-btn");
+    if (fav) {
+      const id = fav.dataset.id;
+      sel.has(id) ? sel.delete(id) : sel.add(id);
+      localStorage.setItem(LS, JSON.stringify([...sel]));
+      return pintar();
+    }
+  });
+  window.addEventListener("hashchange", () => { leerHash(); pintar(); });
+  document.addEventListener("DOMContentLoaded", () => {
+    $("#buscar").addEventListener("input", () => pintar());
+    refrescar(true);
+    setInterval(refrescar, POLL);
+  });
+})();
+
+</script>
+</body>
+</html>
