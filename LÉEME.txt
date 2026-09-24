@@ -1,0 +1,17 @@
+Lenguajes de patrones — versión portable
+========================================
+
+Cómo se usa:
+  Abrir "Lenguajes de patrones.html" con doble clic. Nada más.
+  No hace falta instalar, encender ni conectar nada.
+
+Importante:
+  Conservar la carpeta img/ junto al archivo HTML. Si se separan,
+  el tablero funciona pero se quedan sin verse las láminas.
+
+Qué es:
+  Copia autocontenida del tablero que corre en el servidor local del
+  Demiurgo. El contenido va congelado en el momento de generarse: esta
+  versión NO se actualiza sola cuando se editan las notas del vault.
+
+Generado el 24 de septiembre de 2026.
